@@ -688,7 +688,16 @@ OUTPUT ONLY THE JSON ARRAY STARTING WITH [ AND ENDING WITH ].`;
         renderCards(movies.slice(0, 5));
       } catch (err) {
         console.error('Gemini error:', err);
-        renderCards(fallbackMovies());
+        // Show error message on screen so we can debug
+        document.getElementById('cardsScroll').innerHTML = `
+          <div style="min-width:100%;text-align:center;padding:40px;color:white;">
+            <div style="font-size:2rem;margin-bottom:16px;">❌</div>
+            <div style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:#E94560;margin-bottom:12px;">API Error</div>
+            <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:16px;font-size:0.85rem;color:rgba(255,255,255,0.7);word-break:break-all;max-width:500px;margin:0 auto;text-align:left;">
+              <strong>Error:</strong> ${err.message}<br/><br/>
+              <strong>Check:</strong> Is your Gemini API key valid and active?
+            </div>
+          </div>`;
       }
     }
 
