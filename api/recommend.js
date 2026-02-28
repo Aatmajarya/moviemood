@@ -38,7 +38,7 @@ module.exports = async function handler(req, res) {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'llama3-8b-8192',
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: 'You are a movie recommendation expert. Always respond with only a valid JSON array, no markdown, no explanation.' },
           { role: 'user', content: prompt }
