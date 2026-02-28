@@ -28,6 +28,7 @@ module.exports = async function handler(req, res) {
     '',
     'Return ONLY a JSON array with no markdown or explanation.',
     'Each item must have: title, year, rating, genres (array), synopsis, reason.',
+    `Important: Be creative and diverse. Do NOT repeat popular or obvious choices. Explore lesser known gems too. Random seed: ${Math.floor(Math.random() * 99999)}`,
   ].filter(Boolean).join('\n');
 
   try {
@@ -43,7 +44,7 @@ module.exports = async function handler(req, res) {
           { role: 'system', content: 'You are a movie recommendation expert. Always respond with only a valid JSON array, no markdown, no explanation.' },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
+        temperature: 1.0,
         max_tokens: 2000
       })
     });
