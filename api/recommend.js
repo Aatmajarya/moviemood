@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
   const { mood, language, industry, genre, duration, social } = req.body;
@@ -16,9 +16,9 @@ module.exports = async function handler(req, res) {
     mood && `Mood: ${mood}`,
     language && `Language: ${language} only - reject any movie not in ${language}`,
     industry && `Industry: ${industry} only - reject any movie not from ${industry}`,
-    industry === 'Hollywood' && 'Do NOT suggest any Hindi/Bollywood movies',
-    industry === 'Bollywood' && 'Do NOT suggest any English/Hollywood movies',
-    industry === 'Tollywood' && 'Do NOT suggest any Hindi or English movies',
+    industry === 'Hollywood' && 'Do NOT suggest any Hindi/Bollywood movies under any circumstances',
+    industry === 'Bollywood' && 'Do NOT suggest any English/Hollywood movies under any circumstances',
+    industry === 'Tollywood' && 'Do NOT suggest any Hindi or English movies under any circumstances',
     language === 'English' && 'Do NOT suggest Hindi, Telugu or any non-English movies',
     language === 'Hindi' && 'Do NOT suggest English, Telugu or any non-Hindi movies',
     genre && `Genre: ${genre}`,
@@ -31,27 +31,30 @@ module.exports = async function handler(req, res) {
   ].filter(Boolean).join('\n');
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
-        })
-      }
-    );
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',
+        messages: [
+          { role: 'system', content: 'You are a movie recommendation expert. Always respond with only a valid JSON array, no markdown, no explanation.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(500).json({ 
-        error: `Gemini ${response.status}: ${data?.error?.message || 'Unknown error'}` 
-      });
+      return res.status(500).json({ error: `Groq ${response.status}: ${data?.error?.message || 'Unknown error'}` });
     }
 
-    const text = data.candidates[0].content.parts[0].text.trim();
+    const text = data.choices[0].message.content.trim();
     const start = text.indexOf('[');
     const end = text.lastIndexOf(']');
     if (start === -1 || end === -1) throw new Error('No JSON array in response');
