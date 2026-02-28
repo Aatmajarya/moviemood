@@ -610,32 +610,53 @@
 
     // ── Results: prompt ──
     function buildPrompt() {
-      const langLine = selections.language ? `STRICT RULE: Every movie MUST be in ${selections.language} language only. Do NOT suggest movies in any other language.` : '';
-      const indLine = selections.industry ? `STRICT RULE: Every movie MUST be from ${selections.industry} only. Do NOT suggest movies from any other film industry.` : '';
-      const genreLine = selections.genre ? `STRICT RULE: Every movie MUST match the ${selections.genre} genre.` : '';
-      const durLine = selections.duration ? (selections.duration.includes('Short') ? `STRICT RULE: Every movie MUST be under 2 hours long.` : `STRICT RULE: Every movie MUST be 2 hours or longer.`) : '';
+      const mood = selectedMood || '';
+      const lang = selections.language || '';
+      const industry = selections.industry || '';
+      const genre = selections.genre || '';
+      const duration = selections.duration || '';
+      const social = selections.social || '';
 
-      return `You are a strict movie recommendation expert. Suggest exactly 5 movies.
+      // Build a very explicit validation line
+      const industryMap = {
+        'Bollywood': 'Indian Hindi-language film industry. Movies must be in Hindi and made in India.',
+        'Hollywood': 'American English-language film industry. Movies must be in English and made in USA/UK.',
+        'Tollywood': 'Telugu-language Indian film industry. Movies must be in Telugu and made in India.'
+      };
 
-MOOD: ${selectedMood || 'any'}
-${langLine}
-${indLine}
-${genreLine}
-${durLine}
-WATCHING WITH: ${selections.social || 'anyone'}
+      const durationRule = duration.includes('Short')
+        ? 'Movie runtime MUST be less than 120 minutes (under 2 hours).'
+        : duration.includes('Long')
+        ? 'Movie runtime MUST be 120 minutes or more (2 hours or longer).'
+        : '';
 
-CRITICAL RULES YOU MUST FOLLOW:
-${selections.language ? `- ALL 5 movies must be in ${selections.language} language. Zero exceptions.` : ''}
-${selections.industry ? `- ALL 5 movies must be from ${selections.industry}. Zero exceptions.` : ''}
-${selections.genre ? `- ALL 5 movies must be ${selections.genre} genre. Zero exceptions.` : ''}
-- Do NOT mix industries or languages under any circumstances.
-- If you cannot find 5 movies matching all rules, suggest the closest matches within the same industry and language.
+      return `You are a movie recommendation engine. Return exactly 5 movie recommendations as a JSON array.
 
-Respond with ONLY a raw JSON array. No explanation, no markdown, no code blocks. Just [ ... ].
+==== ACTIVE FILTERS (YOU MUST FOLLOW ALL OF THESE STRICTLY) ====
+${mood ? `MOOD: ${mood} — All movies must suit a ${mood} mood.` : ''}
+${lang ? `LANGUAGE: ${lang} — Every single movie MUST be in ${lang} language ONLY. Reject any movie not in ${lang}.` : ''}
+${industry ? `INDUSTRY: ${industry} — Every single movie MUST be from ${industry} ONLY. ${industryMap[industry] || ''} Reject any movie from a different industry.` : ''}
+${genre ? `GENRE: ${genre} — Every single movie MUST be ${genre} genre. Reject any movie that is not ${genre}.` : ''}
+${durationRule ? `DURATION: ${durationRule}` : ''}
+${social ? `SOCIAL CONTEXT: ${social} — Movies must be appropriate for ${social}.` : ''}
 
-Each object must have exactly: title (string), year (string), rating (string like "8.1"), genres (array of strings), synopsis (2-3 sentences), reason (1 sentence why it matches the mood and filters).
+==== VALIDATION CHECKLIST (apply to EVERY movie before including it) ====
+${lang ? `✓ Is this movie in ${lang}? If NO → REJECT IT.` : ''}
+${industry ? `✓ Is this movie from ${industry}? If NO → REJECT IT.` : ''}
+${genre ? `✓ Is this movie ${genre} genre? If NO → REJECT IT.` : ''}
+${durationRule ? `✓ Does this movie match the duration rule? If NO → REJECT IT.` : ''}
 
-Output only the JSON array, nothing else.`;
+==== EXAMPLES OF WHAT NOT TO DO ====
+${industry === 'Hollywood' ? '- Do NOT suggest Bollywood movies like DDLJ, Kabir Singh, 3 Idiots etc.' : ''}
+${industry === 'Bollywood' ? '- Do NOT suggest Hollywood movies like Titanic, Avengers etc.' : ''}
+${lang === 'English' ? '- Do NOT suggest Hindi, Telugu, Tamil or any non-English movies.' : ''}
+${lang === 'Hindi' ? '- Do NOT suggest English, Telugu, Tamil or any non-Hindi movies.' : ''}
+
+==== OUTPUT FORMAT ====
+Respond with ONLY a raw JSON array. No markdown, no explanation, no code blocks.
+Each object must have: title (string), year (string), rating (string like "8.2"), genres (array of strings), synopsis (2-3 sentences), reason (1 sentence why it matches all the selected filters).
+
+OUTPUT ONLY THE JSON ARRAY STARTING WITH [ AND ENDING WITH ].`;
     }
 
     // ── Gemini API Key — get free key from aistudio.google.com ──
