@@ -629,9 +629,9 @@
             social: selections.social || ''
           })
         });
-        if (!response.ok) throw new Error(`Server error: ${response.status}`);
         const data = await response.json();
-        if (data.error) throw new Error(data.error);
+        if (!response.ok) throw new Error(`Server error ${response.status}: ${JSON.stringify(data)}`);
+        if (data.error) throw new Error(`Gemini error: ${data.error}`);
         if (!Array.isArray(data.movies) || data.movies.length === 0) throw new Error('No movies returned');
         renderCards(data.movies.slice(0, 5));
       } catch (err) {
