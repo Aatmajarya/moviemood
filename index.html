@@ -555,10 +555,65 @@
       selectedMood = mood;
     }
 
+    // Industry <-> Language compatibility map
+    const compatible = {
+      'Hollywood': 'English',
+      'Bollywood': 'Hindi',
+    };
+
     function selectPill(pill, group) {
       document.querySelectorAll(`#f-${group} .pill`).forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       selections[group] = pill.textContent.trim();
+
+      // Auto-correct conflicting language/industry combos
+      if (group === 'industry') {
+        const expectedLang = compatible[selections.industry];
+        if (expectedLang && selections.language && selections.language !== expectedLang) {
+          // Reset language to match industry
+          document.querySelectorAll('#f-language .pill').forEach(p => p.classList.remove('active'));
+          selections.language = null;
+          showConflictToast(`${selections.industry} movies are in ${expectedLang}. Language filter reset.`);
+        }
+        // Auto-select the correct language
+        if (expectedLang) {
+          document.querySelectorAll('#f-language .pill').forEach(p => {
+            if (p.textContent.trim() === expectedLang) {
+              p.classList.add('active');
+              selections.language = expectedLang;
+            }
+          });
+        }
+      }
+
+      if (group === 'language') {
+        // Check if selected language conflicts with industry
+        for (const [ind, lang] of Object.entries(compatible)) {
+          if (selections.industry === ind && selections.language !== lang) {
+            document.querySelectorAll('#f-industry .pill').forEach(p => p.classList.remove('active'));
+            selections.industry = null;
+            showConflictToast(`${selections.language} language doesn't match ${ind}. Industry filter reset.`);
+            break;
+          }
+        }
+      }
+    }
+
+    function showConflictToast(msg) {
+      const existing = document.getElementById('conflict-toast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.id = 'conflict-toast';
+      toast.style.cssText = `
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: rgba(233,69,96,0.95); color: white; padding: 12px 24px;
+        border-radius: 50px; font-family: 'Comic Sans MS', cursive; font-size: 0.85rem;
+        z-index: 999; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        animation: fadeUp 0.3s ease;
+      `;
+      toast.textContent = '⚠️ ' + msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
     }
 
     function goToResults() {
