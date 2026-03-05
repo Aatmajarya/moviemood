@@ -9,26 +9,54 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
-  const { mood, language, industry, genre, duration, social } = req.body;
+  const { mood, language, industry, duration } = req.body;
+
+  const moodRules = {
+    happy: {
+      description: 'Feel-good, uplifting, fun, cheerful, comedy, light-hearted, heartwarming movies that make you smile and laugh.',
+      include: 'comedies, feel-good dramas, uplifting stories, fun adventures, heartwarming films',
+      exclude: 'tragedy, death, grief, depression, dark themes, sad endings, heavy emotional films like Masaan, Devdas, Titanic, Schindler List etc.'
+    },
+    sad: {
+      description: 'Emotional, melancholic, tearjerker movies with heavy themes, loss, grief, heartbreak.',
+      include: 'tearjerkers, emotional dramas, tragic love stories, films about loss and grief',
+      exclude: 'comedies, action blockbusters, light-hearted films, superhero movies'
+    },
+    romantic: {
+      description: 'Love stories, romance, chemistry between characters, beautiful relationships.',
+      include: 'romantic comedies, love stories, films with strong romantic chemistry',
+      exclude: 'horror, action without romance, sad endings without love arc'
+    },
+    nostalgic: {
+      description: 'Classic films, retro vibes, coming of age stories, films that remind you of simpler times.',
+      include: 'classic films, coming of age stories, films set in past decades, childhood memories',
+      exclude: 'recent releases, futuristic films, modern fast-paced action'
+    }
+  };
+
+  const currentMood = moodRules[mood] || {};
 
   const prompt = [
-    'You are a movie expert. Suggest exactly 5 movies.',
-    mood && `Mood: ${mood}`,
-    language && `Language: ${language} only - reject any movie not in ${language}`,
-    industry && `Industry: ${industry} only - reject any movie not from ${industry}`,
+    'You are a strict movie recommendation expert. Suggest exactly 5 movies.',
+    '',
+    mood && `MOOD FILTER (MOST IMPORTANT): ${mood.toUpperCase()}`,
+    mood && `What this mood means: ${currentMood.description}`,
+    mood && `INCLUDE movies that are: ${currentMood.include}`,
+    mood && `STRICTLY EXCLUDE: ${currentMood.exclude}`,
+    mood && `If a movie does not match the ${mood} mood, REJECT IT immediately.`,
+    '',
+    language && `LANGUAGE: ${language} only - REJECT any movie not in ${language}`,
+    industry && `INDUSTRY: ${industry} only - REJECT any movie not from ${industry}`,
     industry === 'Hollywood' && 'Do NOT suggest any Hindi/Bollywood movies under any circumstances',
     industry === 'Bollywood' && 'Do NOT suggest any English/Hollywood movies under any circumstances',
-    industry === 'Tollywood' && 'Do NOT suggest any Hindi or English movies under any circumstances',
     language === 'English' && 'Do NOT suggest Hindi, Telugu or any non-English movies',
     language === 'Hindi' && 'Do NOT suggest English, Telugu or any non-Hindi movies',
-    genre && `Genre: ${genre}`,
-    duration && duration.includes('Short') && 'Duration: under 2 hours only',
-    duration && duration.includes('Long') && 'Duration: 2 hours or longer only',
-    social && `Watching with: ${social}`,
+    duration && duration.includes('Short') && 'DURATION: under 2 hours only',
+    duration && duration.includes('Long') && 'DURATION: 2 hours or longer only',
     '',
     'Return ONLY a JSON array with no markdown or explanation.',
     'Each item must have: title, year, rating, genres (array), synopsis, reason.',
-    `Important: Be creative and diverse. Do NOT repeat popular or obvious choices. Explore lesser known gems too. Random seed: ${Math.floor(Math.random() * 99999)}`,
+    `Be creative and diverse. Explore lesser known gems too. Random seed: ${Math.floor(Math.random() * 99999)}`,
   ].filter(Boolean).join('\n');
 
   try {
