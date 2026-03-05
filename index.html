@@ -266,8 +266,7 @@
     .card-synopsis { font-size: 0.88rem; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     .card-reason { font-size: 0.8rem; color: rgba(245,166,35,0.8); font-style: italic; margin-bottom: 18px; line-height: 1.5; }
     .card-reason::before { content: '💡 '; }
-    .watch-btn { display: block; width: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 50px; padding: 10px; color: white; font-family: 'Comic Sans MS', cursive; font-size: 0.88rem; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; transition: all 0.2s; }
-    .watch-btn:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(233,69,96,0.4); }
+
 
     .actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 10px; }
     .btn-regen { background: linear-gradient(135deg, var(--accent), #0099bb); border: none; border-radius: 50px; padding: 14px 36px; font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: white; cursor: pointer; transition: all 0.3s; box-shadow: 0 6px 25px rgba(0,212,255,0.3); }
@@ -520,7 +519,7 @@
       <div class="step"><div class="step-number" style="background:linear-gradient(135deg,#F5A623,#e67e22);box-shadow:0 6px 20px rgba(245,166,35,0.4);">2</div><div class="step-content"><h3>Set Your Filters 🎛️</h3><p>Choose your Language (Hindi or English), Industry (Bollywood or Hollywood), and Duration. All filters are optional — even just a mood is enough!</p></div><span class="step-emoji">⚙️</span></div>
       <div class="step"><div class="step-number" style="background:linear-gradient(135deg,#00D4FF,#0099bb);box-shadow:0 6px 20px rgba(0,212,255,0.4);">3</div><div class="step-content"><h3>Hit "Find My Movie" 🚀</h3><p>Click the button and our AI instantly processes your mood and filters to craft a personalised recommendation just for you. No two searches are ever the same.</p></div><span class="step-emoji">🎬</span></div>
       <div class="step"><div class="step-number" style="background:linear-gradient(135deg,#9b59b6,#6c3483);box-shadow:0 6px 20px rgba(155,89,182,0.4);">4</div><div class="step-content"><h3>Get 5 Personalised Picks 🍿</h3><p>Scroll through 5 handpicked movie suggestions — each with title, year, rating, synopsis, and a reason why it matches your exact mood and filters.</p></div><span class="step-emoji">✨</span></div>
-      <div class="step"><div class="step-number" style="background:linear-gradient(135deg,#00ff88,#00cc66);box-shadow:0 6px 20px rgba(0,255,136,0.5);">5</div><div class="step-content"><h3>Find Where to Watch 📺</h3><p>Click "Where to Watch" on any card and we'll take you straight to JustWatch — which shows every streaming platform the movie is available on right now.</p></div><span class="step-emoji">📺</span></div>
+      <div class="step"><div class="step-number" style="background:linear-gradient(135deg,#00ff88,#00cc66);box-shadow:0 6px 20px rgba(0,255,136,0.5);">5</div><div class="step-content"><h3>Enjoy Your Movie! 🎉</h3><p>Pick the movie that speaks to you and enjoy! Not feeling the suggestions? Hit "Try Again" for a fresh set of recommendations instantly.</p></div><span class="step-emoji">🎉</span></div>
 
 
 
@@ -710,7 +709,6 @@
       movies.forEach((movie, i) => {
         const card = document.createElement('div');
         card.className = 'movie-card';
-        const jwUrl = `https://www.justwatch.com/in/search?q=${encodeURIComponent(movie.title)}`;
         card.innerHTML = `
           <div class="card-number">${i + 1}</div>
           <div class="card-title">${movie.title}</div>
@@ -721,7 +719,7 @@
           <div class="card-tags">${(movie.genres||[]).map(g=>`<span class="tag">${g}</span>`).join('')}</div>
           <div class="card-synopsis">${movie.synopsis}</div>
           <div class="card-reason">${movie.reason}</div>
-          <a class="watch-btn" href="${jwUrl}" target="_blank">🍿 Where to Watch</a>`;
+`;
         container.appendChild(card);
       });
     }
